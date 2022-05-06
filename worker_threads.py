@@ -14,8 +14,8 @@ class thread(threading.Thread):
         self.worker.main_runner()
 
 
-thread1 = thread("thread1", 1000)
+# thread1 = thread("thread1", 1000)
 thread2 = thread("thread2", 2000);
 
-thread1.start()
+# thread1.start()
 thread2.start()

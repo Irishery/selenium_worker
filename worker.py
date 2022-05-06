@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-gmail_login = os.getenv('GMAIL_LOGIN')
-gmail_pass = os.getenv('GMAIL_PASS')
+gmail_login = os.getenv('MAIL_LOGIN')
+gmail_pass = os.getenv('MAIL_PASS')
 
 coinlist_email = os.getenv('COINLIST_EMAIL')
 coinlist_pass = os.getenv('COINLIST_PASS')
@@ -28,10 +28,12 @@ class Worker:
     def __init__(self) -> None:
         options = uc.ChromeOptions()
         options.binary_location = '/home/kir/chromes/google-chrome-beta_current_x86_64/opt/google/chrome-beta/google-chrome-beta'
+        # options.headless = True
         self.driver = uc.Chrome(options=options)
     
     def main_runner(self):
         self.log_in()
+        # self.approve_new_device()
         sleep(20)
     
     def log_in(self):
@@ -69,11 +71,11 @@ class Worker:
     
     def human_type(self, element, text) -> None:
         for char in text:
-            sleep(random.randint(1,2))
+            sleep(0.3)
             element.send_keys(char)
     
     def check_recaptcha(self) -> bool: 
-        delay = 10
+        delay = 3
         try:
             captcha = WebDriverWait(self.driver, delay).until(EC.presence_of_element_located((By.ID, 'freshworks-frame')))
             return True
@@ -90,14 +92,16 @@ class Worker:
             except IndexError:
                 continue
 
-        self.driver.get('https://www.google.com/intl/ru/gmail/about/')
+        self.driver.get('https://protonmail.com/')
+        input()
 
-        log_in = self.driver.find_element(By.CSS_SELECTOR, 'body > header > div > div > div > a.button.button--medium.button--mobile-before-hero-only')
+        log_in = self.driver.find_element(By.XPATH, '/html/body/div[1]/nav/div[3]/div/div[2]/ul/li[8]/a')
         log_in.click()
+        input()
 
-        delay = 3 # seconds
+        delay = 10 # seconds
         try:
-            email = WebDriverWait(self.driver, delay).until(EC.presence_of_element_located((By.ID, 'identifierId')))
+            email = WebDriverWait(self.driver, delay).until(EC.presence_of_element_located((By.ID, 'username')))
             print("Page is ready!")
         except TimeoutException:
             print("Loading took too much time!")
@@ -106,70 +110,53 @@ class Worker:
 
         self.human_type(email, gmail_login)
 
-        go_to_pass = self.driver.find_element(By.CSS_SELECTOR, '#identifierNext > div > button')
-        go_to_pass.click()
+        # go_to_pass = self.driver.find_element(By.CSS_SELECTOR, '#identifierNext > div > button')
+        # go_to_pass.click()
 
         try:
-            password = WebDriverWait(self.driver, delay).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#password > div.aCsJod.oJeWuf > div > div.Xb9hP > input')))
+            password = WebDriverWait(self.driver, delay).until(EC.presence_of_element_located((By.ID, 'password')))
             print("Page is ready!")
         except TimeoutException:
             print("Loading took too much time!")
 
         self.human_type(password, gmail_pass)
+        input()
 
-        go_to_pass = self.driver.find_element(By.CSS_SELECTOR, '#passwordNext > div > button')
-        go_to_pass.click()
+        enter = self.driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div/div/main/div[2]/form/button')
+        enter.click()
 
         while True:
             try:
-                gmail_search = self.driver.find_element(By.CSS_SELECTOR, '#gs_lc50 > input:nth-child(1)')
+                search = self.driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[3]/header/div[2]/div')
                 print("Page is ready!")
                 break
             except Exception as e:
                 print("Loading took too much time!")
+        
+        search.click()
+
+        search_input = self.driver.find_element(By.ID, 'search-keyword')
+        input()
 
 
-        self.human_type(gmail_search, 'coinlist')
-        search_btn = self.driver.find_element(By.CSS_SELECTOR, '.gb_nf')
+        self.human_type(search_input, 'coinlist')
+        input()
+        search_btn = self.driver.find_element(By.XPATH, '/html/body/div[4]/div[2]/form/div[3]/button[2]')
         search_btn.click()
+        input()
 
         while True:
             try:
-                approve_letter = self.driver.find_element(By.CSS_SELECTOR, '#\:nb')
+                approve_letter = self.driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[3]/div/div[2]/div/main/div/div/div/div[2]')
                 print("Page is ready!")
                 break
             except Exception as e:
                 print("Loading took too much time!")
 
         approve_letter.click()
-        
-        while True:
-            try:
-                close_all = self.driver.find_element(By.XPATH, '/html/body/div[7]/div[3]/div/div[2]/div[1]/div[2]/div/div/div/div/div[2]/div/div[1]/div/div[3]/div/table/tr/td[1]/div[2]/div[1]/div[1]/div/span[1]/div')
-                close_all.click()
-                break
-            except Exception as e:
-                print('close all')
-                print(e)
+        input()
 
-        try:
-            more_info = self.driver.find_element(By.XPATH, '/html/body/div[7]/div[3]/div/div[2]/div[1]/div[2]/div/div/div/div/div[2]/div/div[1]/div/div[3]/div/table/tr/td[1]/div[2]/div[2]/div/div[3]/div[last()]/div/div/div/div/div[1]/div[2]/div[3]/div[2]')
-            print("Page is ready!")
-        except Exception as e:
-            print('load more info')
-            print("Loading took too much time!")
-            raise e
-            
-        while True:
-            try:
-                print(more_info.get_attribute('innerHTML'))
-                more_info.click()
-                break
-            except Exception as e:
-                print('more info')
-                print(e)
-        # input()
-
-        approve_link = self.driver.find_element(By.XPATH, '/html/body/div[7]/div[3]/div/div[2]/div[1]/div[2]/div/div/div/div/div[2]/div/div[1]/div/div[3]/div/table/tr/td[1]/div[2]/div[2]/div/div[3]/div[last()]/div/div/div/div/div[1]/div[2]/div[3]/div[3]/div/div/div[2]/div/table/tbody/tr/td/div/table[1]/tbody/tr/td/div[2]/div/div[7]/a')
+        approve_link = self.driver.find_element(By.CSS_SELECTOR, '#body-wrapper > tbody > tr > td > div > table:nth-child(2) > tbody > tr > td > div.layouts-coinlist_mailer-application__content.layouts-coinlist_mailer-application__content--normal > div > div.s-paddingTop1.u-text-center.s-paddingBottom2 > a')
         approve_link.click()
+        input()
         # input()
